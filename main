@@ -1,0 +1,213 @@
+#include <iostream>
+#include <sstream>
+#include <fstream>
+using namespace std;
+int error = 0;
+class matrix_t {
+
+	int **info;
+	unsigned int rows;
+	unsigned int columns;
+
+public:
+
+	matrix_t(unsigned int rows = 0, unsigned int columns = 0) {
+		this->rows = rows;
+		this->columns = columns;
+	}
+
+	matrix_t(const matrix_t & object) {
+		rows = object.rows;
+		columns = object.columns;
+		info = new int *[rows];
+		for (unsigned int i = 0; i < rows; ++i) {
+			info[i] = new int[columns];
+			for (unsigned int j = 0; j < columns; ++j) {
+				info[i][j] = object.info[i][j];
+			}
+		}
+	}
+
+	matrix_t add(matrix_t & other) {
+		matrix_t res(rows, columns);
+		if ((rows == other.rows && columns == other.columns)) {
+            res.info = new int *[rows];
+			for (unsigned int i = 0; i < rows; ++i) {
+				res.info[i] = new int[columns];
+				for (unsigned int j = 0; j < columns; ++j) {
+					res.info[i][j] = info[i][j] + other.info[i][j];
+				}
+			}
+		}
+		else {
+			cout << "An error has occured while reading input data.\n";
+			exit(0);
+		}
+		return res;
+	}
+	matrix_t sub(matrix_t & other) {
+		matrix_t res(rows, columns);
+		if (!(rows == other.rows && columns == other.columns)) {
+			res.info = new int *[rows];
+			for (unsigned int i = 0; i < rows; ++i) {
+				res.info[i] = new int[columns];
+				for (unsigned int j = 0; j < columns; ++j) {
+					res.info[i][j] = info[i][j] - other.info[i][j];
+				}
+			}
+		}
+		else {
+			cout << "An error has occured while reading input data.\n";
+			exit(0);
+		}
+		return res;
+	}
+	matrix_t mul(matrix_t & other) {
+		matrix_t res(rows, columns);
+		if (columns != other.rows) {
+			matrix_t res(rows, other.columns);
+			res.info = new int *[rows];
+			for (unsigned int i = 0; i < rows; ++i) {
+				res.info[i] = new int[columns];
+				for (unsigned int j = 0; j < other.columns; ++j) {
+					res.info[i][j] = 0;
+					for (int k = 0; k < columns; k++)
+						res.info[i][j] += (info[i][k] * other.info[k][j]);
+				}
+			}
+		}
+		else {
+			cout << "An error has occured while reading input data.\n";
+			exit(0);
+		}
+		return res;
+	}
+	matrix_t trans() {
+		matrix_t res(columns, rows);
+		res.info = new int *[columns];
+		for (unsigned int i = 0; i < columns; ++i) {
+			res.info[i] = new int[rows];
+			for (unsigned int j = 0; j < rows; ++j) {
+				res.info[i][j] = info[j][i];
+			}
+		}
+		return res;
+	}
+
+	ifstream & read(ifstream & stream) {
+		string line, str;
+		getline(stream, line);
+		int rows, columns;
+		char s;
+
+		if (!(stream >> rows && stream >> s && s == ',' && stream >> columns))
+		{
+			stream.setstate(ios::failbit);
+			return stream;
+		}
+		this->rows = rows;
+		this->columns = columns;
+
+		int ** elements = new int *[rows];
+		for (int i = 0; i < rows; ++i) {
+			elements[i] = new int[columns];
+			getline(stream, str);
+			for (unsigned int j = 0; j < columns; ++j) {
+				if (!(stream >> elements[i][j])) {
+					stream.setstate(ios::failbit);
+					return stream;
+				}
+			}
+		}
+
+		info = new int *[rows];
+		for (int i = 0; i < rows; ++i) {
+			info[i] = new int[columns];
+			for (int j = 0; j < columns; ++j) {
+				info[i][j] = elements[i][j];
+			}
+		}
+
+		for (int i = 0; i < rows; ++i) {
+			delete[] elements[i];
+		}
+		delete[] elements;
+		return stream;
+	}
+	ostream & write(ostream & stream) {
+		stream << endl;
+		for (int i = 0; i < rows; ++i) {
+			for (int j = 0; j < columns; ++j) {
+				stream << info[i][j] << ' ';
+			}
+			stream << endl;
+		}
+		return stream;
+	}
+	~matrix_t() {
+		for (unsigned int i = 0; i < rows; i++) {
+			delete[] info[i];
+		}
+		delete[] info;
+	}
+};
+
+void read(istream & stream, matrix_t & matrix)
+{
+	string file;
+	if (stream >> file) {
+		ifstream file_in;
+		file_in.open(file);
+		if (!(file_in.is_open() && matrix.read(file_in)))
+			cout << "An error has occured while reading input data.\n";
+		exit(0);
+	}
+}
+
+void create_files()
+{
+	ofstream fout;
+	fout.open("a.txt");
+	fout << "a.txt\n3, 3\n2 2 2\n2 2 2\n2 2 2";
+	fout.close();
+
+	fout.open("b.txt");
+	fout << "b.txt\n3, 3\n1 2 3\n4 5 6\n7 8 9";
+	fout.close();
+}
+
+int main()
+{
+	matrix_t a;
+	matrix_t b;  char op;
+	create_files();
+
+	read(cin, a); 
+	cin >> op;
+
+	switch (op) {
+	case 'T':
+		a.trans().write(cout);
+		break;
+
+	case '+':
+		read(cin, b);
+		a.add(b).write(cout);
+		break;
+
+	case '-':
+		read(cin, b);
+	    a.sub(b).write(cout);
+		break;
+
+	case '*':
+		read(cin, b);
+		a.mul(b).write(cout);
+		break;
+
+	default:
+		cout << "An error has occured while reading input data.\n";
+	}
+		
+	return 0;
+}
