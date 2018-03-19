@@ -27,11 +27,17 @@ public:
 			}
 		}
 	}
+	~matrix_t() {
+		for (unsigned int i = 0; i < rows; i++) {
+			delete[] info[i];
+		}
+		delete[] info;
+	}
 
 	matrix_t add(matrix_t & other) {
 		matrix_t res(rows, columns);
 		if ((rows == other.rows && columns == other.columns)) {
-            res.info = new int *[rows];
+			res.info = new int *[rows];
 			for (unsigned int i = 0; i < rows; ++i) {
 				res.info[i] = new int[columns];
 				for (unsigned int j = 0; j < columns; ++j) {
@@ -47,7 +53,7 @@ public:
 	}
 	matrix_t sub(matrix_t & other) {
 		matrix_t res(rows, columns);
-		if (!(rows == other.rows && columns == other.columns)) {
+		if (rows == other.rows && columns == other.columns) {
 			res.info = new int *[rows];
 			for (unsigned int i = 0; i < rows; ++i) {
 				res.info[i] = new int[columns];
@@ -63,8 +69,7 @@ public:
 		return res;
 	}
 	matrix_t mul(matrix_t & other) {
-		matrix_t res(rows, columns);
-		if (columns != other.rows) {
+		if (columns = other.rows) {
 			matrix_t res(rows, other.columns);
 			res.info = new int *[rows];
 			for (unsigned int i = 0; i < rows; ++i) {
@@ -75,12 +80,12 @@ public:
 						res.info[i][j] += (info[i][k] * other.info[k][j]);
 				}
 			}
+			return res;
 		}
 		else {
 			cout << "An error has occured while reading input data.\n";
 			exit(0);
 		}
-		return res;
 	}
 	matrix_t trans() {
 		matrix_t res(columns, rows);
@@ -95,15 +100,15 @@ public:
 	}
 
 	ifstream & read(ifstream & stream) {
-		string line, str;
-		getline(stream, line);
+		string line1, line2;
+		getline(stream, line1);
 		int rows, columns;
 		char s;
 
 		if (!(stream >> rows && stream >> s && s == ',' && stream >> columns))
 		{
-			stream.setstate(ios::failbit);
-			return stream;
+			cout << "An error has occured while reading input data.\n";
+			exit(0);
 		}
 		this->rows = rows;
 		this->columns = columns;
@@ -111,11 +116,11 @@ public:
 		int ** elements = new int *[rows];
 		for (int i = 0; i < rows; ++i) {
 			elements[i] = new int[columns];
-			getline(stream, str);
+			getline(stream, line2);
 			for (unsigned int j = 0; j < columns; ++j) {
 				if (!(stream >> elements[i][j])) {
-					stream.setstate(ios::failbit);
-					return stream;
+					cout << "An error has occured while reading input data.\n";
+					exit(0);
 				}
 			}
 		}
@@ -144,12 +149,6 @@ public:
 		}
 		return stream;
 	}
-	~matrix_t() {
-		for (unsigned int i = 0; i < rows; i++) {
-			delete[] info[i];
-		}
-		delete[] info;
-	}
 };
 
 void read(istream & stream, matrix_t & matrix)
@@ -159,8 +158,10 @@ void read(istream & stream, matrix_t & matrix)
 		ifstream file_in;
 		file_in.open(file);
 		if (!(file_in.is_open() && matrix.read(file_in)))
+		{
 			cout << "An error has occured while reading input data.\n";
-		exit(0);
+			exit(0);
+		}
 	}
 }
 
@@ -178,11 +179,10 @@ void create_files()
 
 int main()
 {
-	matrix_t a;
-	matrix_t b;  char op;
+	matrix_t a; matrix_t b;  char op;
 	create_files();
 
-	read(cin, a); 
+	read(cin, a);
 	cin >> op;
 
 	switch (op) {
@@ -197,7 +197,7 @@ int main()
 
 	case '-':
 		read(cin, b);
-	    a.sub(b).write(cout);
+		a.sub(b).write(cout);
 		break;
 
 	case '*':
@@ -208,6 +208,6 @@ int main()
 	default:
 		cout << "An error has occured while reading input data.\n";
 	}
-		
+
 	return 0;
 }
