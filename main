@@ -2,7 +2,7 @@
 #include <sstream>
 #include <fstream>
 using namespace std;
-int error = 0;
+
 class matrix_t {
 
 	int **info;
